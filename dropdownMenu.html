@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dropdown Categorization</title>
+  <style>
+    body {
+      text-align: center;
+      padding: 20px; }
+
+
+    table {
+      width: 80%;
+      margin: 20px auto;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+    .warning { color: red;
+
+    }
+    .success { color: green;
+    }
+    .hidden {
+      display: none;
+    }
+
+  </style>
+</head>
+<body>
+
+<h2>Keyboard shortcuts disabled</h2>
+
+<div id="startScreen">
+  <p>Click the button below to begin.</p>
+  <button onclick="startExperiment()">Start</button>
+</div>
+
+<p id="timer" class="hidden">Time: 0.00s</p>
+
+<div id="experimentArea" class="hidden">
+  <div id="currentItem" style="font-size: 22px; margin: 10px;"></div>
+
+  <select id="categorySelect">
+    <option value="">-- Select Category --</option>
+    <option value="Item">Item</option>
+    <option value="Food">Food</option>
+    <option value="Drink">Drink</option>
+    <option value="Country">Country</option>
+    <option value="Name">Name</option>
+  </select>
+
+  <br>
+  <button onclick="submitCategory()">Submit</button>
+
+  <div id="message"></div>
+
+  <table>
+    <thead>
+    <tr><th>#</th><th>Item</th><th>Category</th></tr>
+    </thead>
+    <tbody id="resultsTable"></tbody>
+  </table>
+</div>
+
+<script>
+  const items = [
+    { name: 'Pizza', category: 'Food' },
+    { name: 'Belgium', category: 'Country' },
+    { name: 'Juice', category: 'Drink' },
+    { name: 'Laptop', category: 'Item' },
+    { name: 'Andreas', category: 'Name' },
+    { name: 'Greece', category: 'Country' },
+    { name: 'Beer', category: 'Drink' },
+    { name: 'Burger', category: 'Food' },
+    { name: 'Maria', category: 'Name' },
+    { name: 'Water', category: 'Drink' },
+    { name: 'Apple', category: 'Food' },
+    { name: 'Chair', category: 'Item' },
+    { name: 'France', category: 'Country' },
+    { name: 'George', category: 'Name' },
+    { name: 'Phone', category: 'Item' },
+    { name: 'Cyprus', category: 'Country' }
+  ];
+
+  let counter = 0;
+  let results = [];
+  let startTime = null;
+  let timerInterval = null;
+
+  function startExperiment() {
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('experimentArea').classList.remove('hidden');
+    document.getElementById('timer').classList.remove('hidden');
+
+    startTime = Date.now();
+    timerInterval = setInterval(updateTimer, 100);
+    loadItem();
+  }
+
+  function updateTimer() {
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+    document.getElementById('timer').textContent = `Time: ${elapsed}s`;
+  }
+
+  function loadItem() {
+    if (counter < items.length) {
+      document.getElementById('currentItem').textContent = `Categorize: ${items[counter].name}`;
+      document.getElementById('message').textContent = '';
+      document.getElementById('categorySelect').value = '';
+    } else {
+      clearInterval(timerInterval);
+      document.getElementById('currentItem').textContent = 'Experiment Completed!';
+      document.getElementById('message').innerHTML = '<strong>Well done!</strong>';
+      document.getElementById('categorySelect').disabled = true;
+    }
+  }
+
+  function submitCategory() {
+    const selected = document.getElementById('categorySelect').value;
+    const currentItem = items[counter];
+    const message = document.getElementById('message');
+
+    if (selected === '') {
+      message.textContent = 'Please select a category.';
+      message.className = 'warning';
+      return;
+    }
+
+    if (selected !== currentItem.category) {
+      message.textContent = `Incorrect! "${currentItem.name}" is not "${selected}". Try again.`;
+      message.className = 'warning';
+      return;
+    }
+
+    message.textContent = `Correct! "${currentItem.name}" is "${selected}".`;
+    message.className = 'success';
+
+    results.push({ item: currentItem.name, category: selected });
+    updateTable();
+    counter++;
+    loadItem();
+  }
+
+  function updateTable() {
+    const table = document.getElementById('resultsTable');
+    table.innerHTML = results.map((r, i) => `
+      <tr><td>${i + 1}</td><td>${r.item}</td><td>${r.category}</td></tr>
+    `).join('');
+  }
+</script>
+
+</body>
+</html>

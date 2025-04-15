@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Keyboard Shortcut Experiment</title>
+    <style>
+        body {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px; }
+
+        th {
+            background-color: #eee;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .warning {
+            color: red;
+        }
+
+    </style>
+</head>
+<body>
+
+<h2>Keyboard Shortcut Categorization Experiment</h2>
+
+<div id="startScreen">
+    <p>Click the button below to begin the experiment.</p>
+    <button onclick="startExperiment()">Start</button>
+</div>
+
+<p id="timer" class="hidden">Time: 0.00s</p>
+
+<p id="instructions" class="hidden">
+    Press:
+    <strong>I</strong> = Item |
+    <strong>F</strong> = Food |
+    <strong>D</strong> = Drink |
+    <strong>C</strong> = Country |
+    <strong>N</strong> = Name
+</p>
+
+<div id="experimentArea" class="hidden">
+    <h3 id="currentItem"></h3>
+    <div id="message"></div>
+
+    <table>
+        <thead>
+        <tr><th>#</th><th>Item</th><th>Category</th></tr>
+        </thead>
+        <tbody id="completed"></tbody>
+    </table>
+</div>
+
+<script>
+    const items = [
+        { name: 'Pizza', category: 'Food' },
+        { name: 'Belgium', category: 'Country' },
+        { name: 'Juice', category: 'Drink' },
+        { name: 'Laptop', category: 'Item' },
+        { name: 'Andreas', category: 'Name' },
+        { name: 'Greece', category: 'Country' },
+        { name: 'Beer', category: 'Drink' },
+        { name: 'Burger', category: 'Food' },
+        { name: 'Maria', category: 'Name' },
+        { name: 'Water', category: 'Drink' },
+        { name: 'Apple', category: 'Food' },
+        { name: 'Chair', category: 'Item' },
+        { name: 'France', category: 'Country' },
+        { name: 'George', category: 'Name' },
+        { name: 'Phone', category: 'Item' },
+        { name: 'Cyprus', category: 'Country' }
+    ];
+
+    let counter = 0;
+    let results = [];
+    let startTime = null;
+    let timerInterval = null;
+    let started = false;
+
+    function startExperiment() {
+        started = true;
+        document.getElementById('startScreen').classList.add('hidden');
+        document.getElementById('timer').classList.remove('hidden');
+        document.getElementById('instructions').classList.remove('hidden');
+        document.getElementById('experimentArea').classList.remove('hidden');
+
+        startTime = Date.now();
+        timerInterval = setInterval(updateTimer, 100);
+        loadItem();
+    }
+
+    function updateTimer() {
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+        document.getElementById('timer').textContent = `Time: ${elapsed}s`;
+    }
+
+    function loadItem() {
+        if (counter < items.length) {
+            document.getElementById('currentItem').textContent = `Categorize: ${items[counter].name}`;
+            document.getElementById('message').textContent = '';
+        } else {
+            clearInterval(timerInterval);
+            document.getElementById('currentItem').textContent = 'Experiment Completed!';
+            document.getElementById('message').innerHTML = '<strong>All items categorized correctly!</strong>';
+        }
+    }
+
+    function categorize(category) {
+        if (!started || counter >= items.length) return;
+
+        const currentItem = items[counter];
+        const msg = document.getElementById('message');
+
+        if (category !== currentItem.category) {
+            msg.textContent = `Incorrect! "${currentItem.name}" is not "${category}". Try again.`;
+            msg.className = 'warning';
+            return;
+        }
+
+        msg.textContent = `Correct! "${currentItem.name}" is "${category}".`;
+        msg.className = 'success';
+
+        results.push({ item: currentItem.name, category: category });
+        updateTable();
+
+        counter++;
+        loadItem();
+    }
+
+    function updateTable() {
+        const tbody = document.getElementById('completed');
+        tbody.innerHTML = results.map((r, i) => `
+      <tr><td>${i + 1}</td><td>${r.item}</td><td>${r.category}</td></tr>
+    `).join('');
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (!started || counter >= items.length) return;
+        const key = e.key.toLowerCase();
+
+        if (key === 'i') categorize('Item');
+        else if (key === 'f') categorize('Food');
+        else if (key === 'd') categorize('Drink');
+        else if (key === 'c') categorize('Country');
+        else if (key === 'n') categorize('Name');
+    });
+</script>
+
+</body>
+</html>
